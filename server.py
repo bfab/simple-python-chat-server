@@ -6,6 +6,7 @@ import socket, select
 class Server(object):
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
+    ADDR_BY_SOCKET = {}
     RECV_BUFFER = 4096  # Advisable to keep it as an exponent of 2
     PORT = 5000
 
@@ -70,8 +71,10 @@ class Server(object):
                                 self.broadcast_data(sock, "\r" + '<' + self.user_name_dict[sock].username + '> ' + data)
 
                     except:
-                        self.broadcast_data(sock, "Client (%s, %s) is offline" % addr)
-                        print "Client (%s, %s) is offline" % addr
+                        addr = self.ADDR_BY_SOCKET[sock]
+                        conn_notification_msg = "Client (%s, %s) is offline" % addr
+                        self.broadcast_data(sock, conn_notification_msg)
+                        print conn_notification_msg
                         sock.close()
                         self.CONNECTION_LIST.remove(sock)
                         continue
@@ -86,6 +89,7 @@ class Server(object):
     def setup_connection(self):
         sockfd, addr = self.server_socket.accept()
         self.CONNECTION_LIST.append(sockfd)
+        self.ADDR_BY_SOCKET[sockfd] = addr
         print "Client (%s, %s) connected" % addr
         self.send_data_to(sockfd, "please enter a username: ")
         self.user_name_dict.update({sockfd: Connection(addr)})
