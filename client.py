@@ -2,6 +2,18 @@ __author__ = 'Alexander Black'
 import socket
 import select
 import sys
+import platform
+
+if platform.system() == 'Darwin':
+    print()
+    print("Notifiche audio abilitate: scrivi 'SAY: ' seguito da una frase per farla ascoltare agli altri nella chat.")
+    print()
+    import os
+    def say(s):
+        os.system('say -v Luca ' + s)
+else:
+    def say(s):
+        pass
 
 
 def prompt():
@@ -47,6 +59,10 @@ class Client(object):
                     else:
                         # print data
                         sys.stdout.write(data)
+                        sayCommand = " SAY: "
+                        index_speech = data.find(sayCommand)
+                        if index_speech != -1:
+                            say(data[index_speech + len(sayCommand):])
                         prompt()
 
                 # user entered a message
